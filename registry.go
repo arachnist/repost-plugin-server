@@ -1,10 +1,11 @@
 package rps
 
 import (
+	"context"
 	"sync"
 )
 
-type plugin func(string, string, []string) []string
+type plugin func(context.Context, string, string, []string) []string
 
 var registry struct {
 	lock    sync.RWMutex
