@@ -9,22 +9,23 @@ import (
 	"golang.org/x/net/trace"
 )
 
-type request struct {
+type Request struct {
+	network   string   `json:"network"`
 	sender    string   `json:"sender"`
 	recipient string   `json:"recipient"`
 	message   []string `json:"message"`
 }
 
-type response struct {
+type Response struct {
 	Ok      bool     `json:"ok"`
 	Err     string   `json:"err",omitempty`
 	Message []string `json:"message",omitempty`
 }
 
-func WrapAPI(name string, fun func(context.Context, string, string, []string) []string) {
+func WrapAPI(name string, fun Plugin) {
 	http.HandleFunc(fmt.Sprintf("/api/v1/rps/%s", name), func(w http.ResponseWriter, r *http.Request) {
-		var q request
-		var res response
+		var q Request
+		var res Response
 
 		tr := trace.New("rps.api", r.URL.String())
 		tr.LazyPrintf("API request from %s", r.RemoteAddr)
@@ -50,6 +51,10 @@ func WrapAPI(name string, fun func(context.Context, string, string, []string) []
 		}
 
 		res.Ok = true
-		res.Message = fun(ctx, q.sender, q.recipient, q.message)
+		res = fun(ctx, q)
+		if res.Ok != true {
+			tr.LazyPrintf("Plugin %s error: %s", name, res.Err)
+			tr.SetError()
+		}
 	})
 }
