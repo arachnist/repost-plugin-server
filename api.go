@@ -26,6 +26,7 @@ func WrapAPI(name string, fun Plugin) {
 	http.HandleFunc(fmt.Sprintf("/api/v1/rps/%s", name), func(w http.ResponseWriter, r *http.Request) {
 		var q Request
 		var res Response
+		var cfgEnv map[string]string
 
 		tr := trace.New("rps.api", r.URL.String())
 		tr.LazyPrintf("API request from %s", r.RemoteAddr)
@@ -49,6 +50,10 @@ func WrapAPI(name string, fun Plugin) {
 			res.Err = err.Error()
 			return
 		}
+
+		cfgEnv["network"] = q.network
+		cfgEnv["sender"] = q.sender
+		cfgEnv["recipient"] = q.recipient
 
 		res.Ok = true
 		res = fun(ctx, q)
