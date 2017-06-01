@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"sort"
 	"sync"
 	"time"
 
@@ -74,10 +73,6 @@ func (c *config) cacheUpdate(ctx context.Context, file string) error {
 			tr.LazyPrintf("Purging cache: file %s is unparsable", file)
 			delete(c.cache, file)
 			return err
-		}
-
-		for key, _ := range f {
-			sort.Strings(f[key])
 		}
 
 		tr.LazyPrintf("Updating cache: file %s", file)
