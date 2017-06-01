@@ -5,32 +5,24 @@ import (
 	"sync"
 )
 
-type Plugin func(context.Context, Request) Response
+type Plugin struct {
+	Name      string
+	Call      func(context.Context, map[string][]string, Request) Response
+	Variables []string
+}
 
 var registry struct {
 	lock    sync.RWMutex
-	plugins map[string]Plugin
+	plugins []Plugin
 }
 
-func Register(name string, function Plugin) {
+func Register(p Plugin) {
 	registry.lock.Lock()
 	defer registry.lock.Unlock()
 
-	if registry.plugins == nil {
-		registry.plugins = make(map[string]Plugin)
-	}
-
-	registry.plugins[name] = function
+	registry.plugins = append(registry.plugins, p)
 }
 
-func Plugins() (rplugins map[string]Plugin) {
-	registry.lock.RLock()
-	defer registry.lock.RUnlock()
-
-	rplugins = make(map[string]Plugin)
-	for k, v := range registry.plugins {
-		rplugins[k] = v
-	}
-
-	return rplugins
+func Plugins() []Plugin {
+	return registry.plugins
 }

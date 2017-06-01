@@ -10,11 +10,11 @@ import (
 	"github.com/arachnist/repost-plugin-server/util"
 )
 
-func bonjour(ctx context.Context, request rps.Request) (response rps.Response) {
-	t, _ := time.Parse("2006-01-02", "2015-12-01")
+func bonjour(ctx context.Context, config map[string][]string, request rps.Request) (response rps.Response) {
+	t, _ := time.Parse("2006-01-02", config["startDate"][0])
 	max := int(time.Now().Sub(t).Hours())/24 + 1
 
-	img, err := util.HTTPGetXpath("http://ditesbonjouralamadame.tumblr.com/page/"+fmt.Sprintf("%d", rand.Intn(max)+1), "//div[@class='photo post']//a/@href")
+	img, err := util.HTTPGetXpath(config["URL"][0]+fmt.Sprintf("%d", rand.Intn(max)+1), config["xpath"][0])
 	if err != nil {
 		response.Ok = false
 		response.Err = err.Error()
@@ -27,5 +27,5 @@ func bonjour(ctx context.Context, request rps.Request) (response rps.Response) {
 }
 
 func init() {
-	rps.Register("bonjour", bonjour)
+	rps.Register(rps.Plugin{"bonjour", bonjour, []string{"URL", "xpath", "startDate"}})
 }

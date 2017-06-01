@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
+	"sync"
 	"time"
 
 	"golang.org/x/net/trace"
@@ -16,27 +18,34 @@ type cacheEntry struct {
 	contents map[string][]string
 }
 
-type Config struct {
+type config struct {
 	basedir string
 	cache   map[string]cacheEntry
+	lock    sync.Mutex
 }
 
-func (c *Config) fileList(env map[string]string) (r []string) {
+func (c *config) fileList(env map[string]string) (r []string) {
 	if env["network"] != "" {
 		if env["recipient"] != "" {
 			if env["sender"] != "" {
-				r = append(r, path.Join(c.basedir, env["network"], env["recipient"], env["sender"]+".json"))
-				r = append(r, path.Join(c.basedir, env["network"], env["sender"]+".json"))
+				r = append(r, []string{path.Join(c.basedir, env["network"], env["recipient"], env["sender"], env["plugin"]+".json"),
+					path.Join(c.basedir, env["network"], env["recipient"], env["sender"]+".json"),
+					path.Join(c.basedir, env["network"], env["sender"]+".json")}...)
 			}
-			r = append(r, path.Join(c.basedir, env["network"], env["recipient"]+".json"))
+
+			r = append(r, []string{path.Join(c.basedir, env["network"], env["recipient"], env["plugin"]+".json"),
+				path.Join(c.basedir, env["network"], env["recipient"]+".json")}...)
 		}
-		r = append(r, path.Join(c.basedir, env["network"]+".json"))
+
+		r = append(r, []string{path.Join(c.basedir, env["network"], env["plugin"]+".json"),
+			path.Join(c.basedir, env["network"]+".json")}...)
 	}
 
-	return append(r, path.Join(c.basedir, "common.json"))
+	return append(r, []string{path.Join(c.basedir, env["plugin"]+".json"),
+		path.Join(c.basedir, "common.json")}...)
 }
 
-func (c *Config) cacheUpdate(ctx context.Context, file string) error {
+func (c *config) cacheUpdate(ctx context.Context, file string) error {
 	tr, _ := trace.FromContext(ctx)
 	var f map[string][]string
 
@@ -48,6 +57,7 @@ func (c *Config) cacheUpdate(ctx context.Context, file string) error {
 	}
 
 	if err != nil {
+		tr.LazyPrintf("Error occured: %s", err.Error())
 		return err
 	}
 
@@ -66,6 +76,10 @@ func (c *Config) cacheUpdate(ctx context.Context, file string) error {
 			return err
 		}
 
+		for key, _ := range f {
+			sort.Strings(f[key])
+		}
+
 		tr.LazyPrintf("Updating cache: file %s", file)
 		c.cache[file] = cacheEntry{
 			modTime:  i.ModTime(),
@@ -76,8 +90,10 @@ func (c *Config) cacheUpdate(ctx context.Context, file string) error {
 	return nil
 }
 
-func (c *Config) Lookup(ctx context.Context, env map[string]string, key string) []string {
+func (c *config) Lookup(ctx context.Context, env map[string]string, key string) []string {
 	tr, _ := trace.FromContext(ctx)
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
 	for _, file := range c.fileList(env) {
 		if c.cacheUpdate(ctx, file) != nil {

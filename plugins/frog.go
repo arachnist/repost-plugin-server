@@ -19,11 +19,11 @@ type tips struct {
 	lock sync.RWMutex
 }
 
-func (tips *tips) fetchTips() error {
+func (tips *tips) fetchTips(url string) error {
 	tips.lock.Lock()
 	defer tips.lock.Unlock()
 
-	data, err := util.HTTPGet("http://frog.tips/api/1/tips/")
+	data, err := util.HTTPGet(url)
 	if err != nil {
 		return err
 	}
@@ -36,9 +36,9 @@ func (tips *tips) fetchTips() error {
 	return nil
 }
 
-func (tips *tips) popTip() (string, error) {
+func (tips *tips) popTip(url string) (string, error) {
 	if len(tips.Tips) == 0 {
-		if err := tips.fetchTips(); err != nil {
+		if err := tips.fetchTips(url); err != nil {
 			return "", err
 		}
 	}
@@ -54,8 +54,8 @@ func (tips *tips) popTip() (string, error) {
 
 var t tips
 
-func frog(ctx context.Context, request rps.Request) (response rps.Response) {
-	tip, err := t.popTip()
+func frog(ctx context.Context, config map[string][]string, request rps.Request) (response rps.Response) {
+	tip, err := t.popTip(config["URL"][0])
 	if err != nil {
 		response.Ok = false
 		response.Err = err.Error()
@@ -67,5 +67,5 @@ func frog(ctx context.Context, request rps.Request) (response rps.Response) {
 }
 
 func init() {
-	rps.Register("frog", frog)
+	rps.Register(rps.Plugin{"frog", frog, []string{"URL"}})
 }

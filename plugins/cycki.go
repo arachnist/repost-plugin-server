@@ -10,8 +10,8 @@ import (
 
 var stripCycki *regexp.Regexp
 
-func cycki(ctx context.Context, request rps.Request) (response rps.Response) {
-	img, err := util.HTTPGetXpath("http://oboobs.ru/random/", "//img/@src")
+func cycki(ctx context.Context, config map[string][]string, request rps.Request) (response rps.Response) {
+	img, err := util.HTTPGetXpath(config["URL"][0], config["xpath"][0])
 	if err != nil {
 		response.Ok = false
 		response.Err = err.Error()
@@ -25,5 +25,5 @@ func cycki(ctx context.Context, request rps.Request) (response rps.Response) {
 
 func init() {
 	stripCycki = regexp.MustCompile("/boobs_preview")
-	rps.Register("cycki", cycki)
+	rps.Register(rps.Plugin{"cycki", cycki, []string{"URL", "xpath"}})
 }

@@ -23,14 +23,14 @@ type checkinator struct {
 	Users   []user
 }
 
-func at(ctx context.Context, request rps.Request) (response rps.Response) {
+func at(ctx context.Context, config map[string][]string, request rps.Request) (response rps.Response) {
 	var values checkinator
 	var recently []string
 	var now []string
 
 	response.Ok = true
 
-	data, err := util.HTTPGet("https://at.hackerspace.pl/api")
+	data, err := util.HTTPGet(config["URL"][0])
 	if err != nil {
 		response.Ok = false
 		response.Err = err.Error()
@@ -62,7 +62,7 @@ func at(ctx context.Context, request rps.Request) (response rps.Response) {
 		response.Message = append(append(response.Message, "recently:"), recently...)
 	}
 	if len(now) == 0 && len(recently) == 0 {
-		response.Message = append(response.Message, []string{"Wieje", "sandałem,", "z", "masłem"}...)
+		response.Message = append(response.Message, config["empty"]...)
 	}
 
 	if values.Kektops > 0 {
@@ -81,5 +81,5 @@ func at(ctx context.Context, request rps.Request) (response rps.Response) {
 }
 
 func init() {
-	rps.Register("at", at)
+	rps.Register(rps.Plugin{"at", at, []string{"URL", "empty"}})
 }

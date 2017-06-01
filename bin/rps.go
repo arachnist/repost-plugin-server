@@ -4,9 +4,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
-
-	"github.com/golang/glog"
-	"github.com/gorilla/handlers"
+	"path"
 
 	"github.com/arachnist/repost-plugin-server"
 	_ "github.com/arachnist/repost-plugin-server/plugins"
@@ -14,19 +12,20 @@ import (
 
 var (
 	bindAddress string
+	baseConfig  string
 )
 
 func main() {
-	glog.Info("Starting repost plugin server...")
-	for name, plugin := range rps.Plugins() {
-		glog.Info("Registering plugin", name)
-		rps.WrapAPI(name, plugin)
+	RPS := rps.New(baseConfig)
+	for _, plugin := range rps.Plugins() {
+		RPS.WrapAPI(plugin)
 	}
 
-	glog.Error(http.ListenAndServe(bindAddress, handlers.CombinedLoggingHandler(os.Stdout, http.DefaultServeMux)))
+	http.ListenAndServe(bindAddress, nil)
 }
 
 func init() {
 	flag.StringVar(&bindAddress, "bind_address", ":8081", "Address to bind the web api")
+	flag.StringVar(&baseConfig, "base_config", path.Join(os.Getenv("HOME"), ".repost"), "Base configuration directory")
 	flag.Parse()
 }

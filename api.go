@@ -5,15 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path"
+	"path/filepath"
+	"sort"
+	"strings"
 
 	"golang.org/x/net/trace"
 )
 
 type Request struct {
-	network   string   `json:"network"`
-	sender    string   `json:"sender"`
-	recipient string   `json:"recipient"`
-	message   []string `json:"message"`
+	Network   string   `json:"network"`
+	Sender    string   `json:"sender"`
+	Recipient string   `json:"recipient"`
+	Message   []string `json:"message"`
 }
 
 type Response struct {
@@ -22,11 +26,12 @@ type Response struct {
 	Message []string `json:"message",omitempty`
 }
 
-func WrapAPI(name string, fun Plugin) {
-	http.HandleFunc(fmt.Sprintf("/api/v1/rps/%s", name), func(w http.ResponseWriter, r *http.Request) {
+func (srv *server) WrapAPI(p Plugin) {
+	http.HandleFunc(fmt.Sprintf("/api/v1/rps/%s", p.Name), func(w http.ResponseWriter, r *http.Request) {
 		var q Request
 		var res Response
-		var cfgEnv map[string]string
+		var config = make(map[string][]string)
+		var environment map[string]string
 
 		tr := trace.New("rps.api", r.URL.String())
 		tr.LazyPrintf("API request from %s", r.RemoteAddr)
@@ -51,14 +56,59 @@ func WrapAPI(name string, fun Plugin) {
 			return
 		}
 
-		cfgEnv["network"] = q.network
-		cfgEnv["sender"] = q.sender
-		cfgEnv["recipient"] = q.recipient
+		environment = map[string]string{
+			"network":   q.Network,
+			"sender":    q.Sender,
+			"recipient": q.Recipient,
+			"plugin":    p.Name,
+		}
+
+		// try to avoid directory traversal in configuration lookup
+		for key, value := range environment {
+			if !strings.HasPrefix(filepath.Clean(path.Join(srv.basedir, value)), srv.basedir) {
+				res.Ok = false
+				res.Err = "invalid env value"
+				tr.LazyPrintf("Key %s invalid value %s", key, value)
+				tr.SetError()
+				return
+			}
+		}
+
+		whitelist := srv.Lookup(ctx, environment, "whitelist")
+		if whitelist != nil && sort.SearchStrings(whitelist, p.Name) == len(whitelist) {
+			res.Ok = false
+			res.Err = "plugin not whitelisted"
+			tr.LazyPrintf("Plugin %s not whitelisted in env %+v", p.Name, environment)
+			tr.SetError()
+			return
+		}
+
+		blacklist := srv.Lookup(ctx, environment, "blacklist")
+		if blacklist != nil && sort.SearchStrings(blacklist, p.Name) < len(blacklist) {
+			res.Ok = false
+			res.Err = "plugin blacklisted"
+			tr.LazyPrintf("Plugin %s blacklisted in env %+v", p.Name, environment)
+			tr.SetError()
+			return
+		}
+
+		// populate plugin config
+		for _, vName := range p.Variables {
+			if tVal := srv.Lookup(ctx, environment, vName); tVal == nil {
+				res.Ok = false
+				res.Err = "plugin configuration error"
+				tr.LazyPrintf("Plugin %s not configured. Missing configuration key: %s", p.Name, vName)
+				tr.SetError()
+				return
+			} else {
+				config[vName] = tVal
+			}
+		}
 
 		res.Ok = true
-		res = fun(ctx, q)
+		res = p.Call(ctx, config, q)
 		if res.Ok != true {
-			tr.LazyPrintf("Plugin %s error: %s", name, res.Err)
+			tr.LazyPrintf("Plugin %s error: %s", p.Name, res.Err)
 			tr.SetError()
 		}
 	})
