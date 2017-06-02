@@ -1,3 +1,4 @@
 {
-    "whitelist":["at","cycki"]
+    "whitelist":["at","cycki","frog"],
+    "plugins":["at","bonjour","cycki","frog"]
 }

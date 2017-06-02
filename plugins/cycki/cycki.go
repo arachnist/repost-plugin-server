@@ -1,4 +1,4 @@
-package plugins
+package main
 
 import (
 	"context"
@@ -25,5 +25,10 @@ func cycki(ctx context.Context, config map[string][]string, request rps.Request)
 
 func init() {
 	stripCycki = regexp.MustCompile("/boobs_preview")
-	rps.Register(rps.Plugin{"cycki", cycki, []string{"URL", "xpath"}})
+}
+
+func List() []rps.Plugin {
+	return []rps.Plugin{
+		{"cycki", cycki, []string{"URL", "xpath"}},
+	}
 }

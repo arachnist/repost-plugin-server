@@ -1,4 +1,4 @@
-package plugins
+package main
 
 import (
 	"context"
@@ -66,6 +66,8 @@ func frog(ctx context.Context, config map[string][]string, request rps.Request) 
 	return
 }
 
-func init() {
-	rps.Register(rps.Plugin{"frog", frog, []string{"URL"}})
+func List() []rps.Plugin {
+	return []rps.Plugin{
+		{"frog", frog, []string{"URL"}},
+	}
 }

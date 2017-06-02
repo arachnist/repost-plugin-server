@@ -2,6 +2,7 @@ package rps
 
 type server struct {
 	*config
+	*registry
 }
 
 func New(basedir string) *server {
@@ -10,6 +11,9 @@ func New(basedir string) *server {
 		&config{
 			basedir: basedir,
 			cache:   make(map[string]cacheEntry),
+		},
+		&registry{
+			plugins: make(map[string]Plugin),
 		},
 	}
 }

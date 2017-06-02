@@ -1,4 +1,4 @@
-package plugins
+package main
 
 import (
 	"context"
@@ -80,6 +80,8 @@ func at(ctx context.Context, config map[string][]string, request rps.Request) (r
 	return response
 }
 
-func init() {
-	rps.Register(rps.Plugin{"at", at, []string{"URL", "empty"}})
+func List() []rps.Plugin {
+	return []rps.Plugin{
+		{"at", at, []string{"URL", "empty"}},
+	}
 }

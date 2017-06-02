@@ -11,18 +11,29 @@ type Plugin struct {
 	Variables []string
 }
 
-var registry struct {
+type registry struct {
 	lock    sync.RWMutex
-	plugins []Plugin
+	plugins map[string]Plugin
 }
 
-func Register(p Plugin) {
-	registry.lock.Lock()
-	defer registry.lock.Unlock()
+func (r *registry) register(p Plugin) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
 
-	registry.plugins = append(registry.plugins, p)
+	if r.plugins == nil {
+		r.plugins = make(map[string]Plugin)
+	}
+
+	r.plugins[p.Name] = p
 }
 
-func Plugins() []Plugin {
-	return registry.plugins
+func (r *registry) deregister(name string) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	delete(r.plugins, name)
+}
+
+func (r *registry) list() map[string]Plugin {
+	return r.plugins
 }

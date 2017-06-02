@@ -1,4 +1,4 @@
-package plugins
+package main
 
 import (
 	"context"
@@ -26,6 +26,8 @@ func bonjour(ctx context.Context, config map[string][]string, request rps.Reques
 	return
 }
 
-func init() {
-	rps.Register(rps.Plugin{"bonjour", bonjour, []string{"URL", "xpath", "startDate"}})
+func List() []rps.Plugin {
+	return []rps.Plugin{
+		{"bonjour", bonjour, []string{"URL", "empty"}},
+	}
 }
