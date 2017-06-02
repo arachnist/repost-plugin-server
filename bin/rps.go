@@ -38,8 +38,7 @@ func main() {
 			tr.LazyPrintf("Plugin %s List function lookup failed: %s", name, err.Error())
 			continue
 		}
-		listFunc := listSym.(func() []rps.Plugin)
-		for _, plug := range listFunc() {
+		for _, plug := range listSym.(func() []rps.Plugin)() {
 			RPS.WrapAPI(plug)
 		}
 	}
