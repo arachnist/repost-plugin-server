@@ -42,6 +42,6 @@ func main() {
 func init() {
 	flag.StringVar(&bindAddress, "bind_address", ":8081", "Address to bind the web api")
 	flag.StringVar(&baseConfig, "base_config", path.Join(os.Getenv("HOME"), ".repost", "config"), "Base configuration directory")
-	flag.StringVar(&plugins, "plugins", path.Join(os.Getenv("HOME"), ".repost", "plugins"), "Base configuration directory")
+	flag.StringVar(&plugins, "plugins", path.Join(os.Getenv("HOME"), ".repost", "plugins"), "Base plugin directory")
 	flag.Parse()
 }
