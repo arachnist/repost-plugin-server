@@ -65,7 +65,7 @@ func (srv *server) WrapAPI(p Plugin) {
 
 		// try to avoid directory traversal in configuration lookup
 		for key, value := range environment {
-			if !strings.HasPrefix(filepath.Clean(path.Join(srv.basedir, value)), srv.basedir) {
+			if !strings.HasPrefix(filepath.Clean(path.Join(srv.Config.basedir, value)), srv.Config.basedir) {
 				res.Ok = false
 				res.Err = "invalid env value"
 				tr.LazyPrintf("Key %s invalid value %s", key, value)
@@ -74,7 +74,7 @@ func (srv *server) WrapAPI(p Plugin) {
 			}
 		}
 
-		whitelist := srv.Lookup(ctx, environment, "whitelist")
+		whitelist := srv.Config.Lookup(ctx, environment, "whitelist")
 		if whitelist != nil {
 			whitelisted = false
 			for _, plugin := range whitelist {
@@ -92,7 +92,7 @@ func (srv *server) WrapAPI(p Plugin) {
 			}
 		}
 
-		blacklist := srv.Lookup(ctx, environment, "blacklist")
+		blacklist := srv.Config.Lookup(ctx, environment, "blacklist")
 		if blacklist != nil {
 			for _, plugin := range blacklist {
 				if plugin == p.Name {
@@ -107,7 +107,7 @@ func (srv *server) WrapAPI(p Plugin) {
 
 		// populate plugin config
 		for _, vName := range p.Variables {
-			if tVal := srv.Lookup(ctx, environment, vName); tVal == nil {
+			if tVal := srv.Config.Lookup(ctx, environment, vName); tVal == nil {
 				res.Ok = false
 				res.Err = "plugin configuration error"
 				tr.LazyPrintf("Plugin %s not configured. Missing configuration key: %s", p.Name, vName)

@@ -24,7 +24,7 @@ func main() {
 	tr := trace.New("rps.init", "")
 	ctx := trace.NewContext(context.Background(), tr)
 
-	for _, name := range RPS.Lookup(ctx, nil, "plugins") {
+	for _, name := range RPS.Config.Lookup(ctx, nil, "plugins") {
 		tr.LazyPrintf("Loading plugin %s", name)
 		p, err := plugin.Open(path.Join(plugins, name+".so"))
 		if err != nil {

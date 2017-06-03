@@ -17,13 +17,20 @@ type cacheEntry struct {
 	contents map[string][]string
 }
 
-type config struct {
+type Config struct {
 	basedir string
 	cache   map[string]cacheEntry
 	lock    sync.Mutex
 }
 
-func (c *config) fileList(env map[string]string) (r []string) {
+func NewConfig(basedir string) *Config {
+	c := new(Config)
+	c.basedir = basedir
+	c.cache = make(map[string]cacheEntry)
+	return c
+}
+
+func (c *Config) fileList(env map[string]string) (r []string) {
 	if env["network"] != "" {
 		if env["recipient"] != "" {
 			if env["sender"] != "" {
@@ -44,7 +51,7 @@ func (c *config) fileList(env map[string]string) (r []string) {
 		path.Join(c.basedir, "common.json")}...)
 }
 
-func (c *config) cacheUpdate(ctx context.Context, file string) error {
+func (c *Config) cacheUpdate(ctx context.Context, file string) error {
 	tr, _ := trace.FromContext(ctx)
 	var f map[string][]string
 
@@ -85,7 +92,7 @@ func (c *config) cacheUpdate(ctx context.Context, file string) error {
 	return nil
 }
 
-func (c *config) Lookup(ctx context.Context, env map[string]string, key string) []string {
+func (c *Config) Lookup(ctx context.Context, env map[string]string, key string) []string {
 	tr, _ := trace.FromContext(ctx)
 	c.lock.Lock()
 	defer c.lock.Unlock()
