@@ -36,6 +36,7 @@ func (c *Config) fileList(env map[string]string) (r []string) {
 			if env["sender"] != "" {
 				r = append(r, []string{path.Join(c.basedir, env["network"], env["recipient"], env["sender"], env["plugin"]+".json"),
 					path.Join(c.basedir, env["network"], env["recipient"], env["sender"]+".json"),
+					path.Join(c.basedir, env["network"], env["sender"], env["plugin"]+".json"),
 					path.Join(c.basedir, env["network"], env["sender"]+".json")}...)
 			}
 
