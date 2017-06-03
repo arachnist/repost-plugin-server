@@ -14,7 +14,7 @@ import (
 )
 
 func (srv *server) WrapAPI(p types.Plugin) {
-	http.HandleFunc("/api/v1/rps/"+p.Name, func(w http.ResponseWriter, r *http.Request) {
+	srv.Mux.HandleFunc("/api/v1/rps/"+p.Name, func(w http.ResponseWriter, r *http.Request) {
 		var q types.Request
 		var res types.Response
 		var config = make(map[string][]string)

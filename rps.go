@@ -9,7 +9,7 @@ import (
 type server struct {
 	Config  *Config
 	plugins map[string]types.Plugin
-	mux     *ServeMux
+	Mux     *ServeMux
 	lock    sync.RWMutex
 }
 
@@ -17,7 +17,7 @@ func New(basedir string) *server {
 	return &server{
 		Config:  NewConfig(basedir),
 		plugins: make(map[string]types.Plugin),
-		mux:     NewServeMux(),
+		Mux:     NewServeMux(),
 	}
 }
 
@@ -37,7 +37,7 @@ func (r *server) deregister(name string) {
 	defer r.lock.Unlock()
 
 	delete(r.plugins, name)
-	r.mux.Deregister("/api/v1/rps/" + name)
+	r.Mux.Deregister("/api/v1/rps/" + name)
 }
 
 func (r *server) list() map[string]types.Plugin {

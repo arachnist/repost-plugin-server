@@ -25,6 +25,25 @@ func main() {
 	tr := trace.New("rps.init", "")
 	ctx := trace.NewContext(context.Background(), tr)
 
+	RPS.Mux.HandleFunc("/debug/requests", func(w http.ResponseWriter, req *http.Request) {
+		any, sensitive := trace.AuthRequest(req)
+		if !any {
+			http.Error(w, "not allowed", http.StatusUnauthorized)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		trace.Render(w, req, sensitive)
+	})
+	RPS.Mux.HandleFunc("/debug/events", func(w http.ResponseWriter, req *http.Request) {
+		any, sensitive := trace.AuthRequest(req)
+		if !any {
+			http.Error(w, "not allowed", http.StatusUnauthorized)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		trace.RenderEvents(w, req, sensitive)
+	})
+
 	for _, name := range RPS.Config.Lookup(ctx, nil, "plugins") {
 		tr.LazyPrintf("Loading plugin %s", name)
 		p, err := plugin.Open(path.Join(plugins, name+".so"))
@@ -46,7 +65,7 @@ func main() {
 
 	tr.Finish()
 
-	http.ListenAndServe(bindAddress, nil)
+	http.ListenAndServe(bindAddress, RPS.Mux)
 }
 
 func init() {
