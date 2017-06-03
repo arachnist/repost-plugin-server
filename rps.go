@@ -1,7 +1,11 @@
 package rps
 
 import (
+	"context"
+	"plugin"
 	"sync"
+
+	"golang.org/x/net/trace"
 
 	"github.com/arachnist/repost-plugin-server/types"
 )
@@ -19,6 +23,26 @@ func New(basedir string) *server {
 		plugins: make(map[string]types.Plugin),
 		Mux:     NewServeMux(),
 	}
+}
+
+func (r *server) Load(ctx context.Context, pl string) error {
+	tr, _ := trace.FromContext(ctx)
+	p, err := plugin.Open(pl)
+	if err != nil {
+		tr.SetError()
+		tr.LazyPrintf("Error loading plugin %s: %s", pl, err.Error())
+		return err
+	}
+	listSym, err := p.Lookup("List")
+	if err != nil {
+		tr.SetError()
+		tr.LazyPrintf("Plugin %s List function lookup failed: %s", pl, err.Error())
+		return err
+	}
+	for _, plug := range listSym.(func() []types.Plugin)() {
+		r.Register(plug)
+	}
+	return nil
 }
 
 func (r *server) Register(p types.Plugin) {
