@@ -214,6 +214,7 @@ func (mux *ServeMux) HandleFunc(pattern string, handler func(http.ResponseWriter
 	mux.Handle(pattern, http.HandlerFunc(handler))
 }
 
+// Deregister deregisters hander attached to a pattern.
 func (mux *ServeMux) Deregister(pattern string) {
 	mux.mu.Lock()
 	defer mux.mu.Unlock()
