@@ -11,6 +11,7 @@ import (
 	"golang.org/x/net/trace"
 
 	"github.com/arachnist/repost-plugin-server"
+	"github.com/arachnist/repost-plugin-server/types"
 )
 
 var (
@@ -38,7 +39,7 @@ func main() {
 			tr.LazyPrintf("Plugin %s List function lookup failed: %s", name, err.Error())
 			continue
 		}
-		for _, plug := range listSym.(func() []rps.Plugin)() {
+		for _, plug := range listSym.(func() []types.Plugin)() {
 			RPS.WrapAPI(plug)
 		}
 	}

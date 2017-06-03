@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/arachnist/repost-plugin-server"
+	"github.com/arachnist/repost-plugin-server/types"
 	"github.com/arachnist/repost-plugin-server/util"
 )
 
@@ -23,7 +23,7 @@ type checkinator struct {
 	Users   []user
 }
 
-func at(ctx context.Context, config map[string][]string, request rps.Request) (response rps.Response) {
+func at(ctx context.Context, config map[string][]string, request types.Request) (response types.Response) {
 	var values checkinator
 	var recently []string
 	var now []string
@@ -80,8 +80,8 @@ func at(ctx context.Context, config map[string][]string, request rps.Request) (r
 	return response
 }
 
-func List() []rps.Plugin {
-	return []rps.Plugin{
+func List() []types.Plugin {
+	return []types.Plugin{
 		{"at", at, []string{"URL", "empty"}},
 	}
 }

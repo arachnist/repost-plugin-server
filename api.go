@@ -3,32 +3,20 @@ package rps
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"path"
 	"path/filepath"
 	"strings"
 
 	"golang.org/x/net/trace"
+
+	"github.com/arachnist/repost-plugin-server/types"
 )
 
-type Request struct {
-	Network   string   `json:"network"`
-	Sender    string   `json:"sender"`
-	Recipient string   `json:"recipient"`
-	Message   []string `json:"message"`
-}
-
-type Response struct {
-	Ok      bool     `json:"ok"`
-	Err     string   `json:"err",omitempty`
-	Message []string `json:"message",omitempty`
-}
-
-func (srv *server) WrapAPI(p Plugin) {
-	http.HandleFunc(fmt.Sprintf("/api/v1/rps/%s", p.Name), func(w http.ResponseWriter, r *http.Request) {
-		var q Request
-		var res Response
+func (srv *server) WrapAPI(p types.Plugin) {
+	http.HandleFunc("/api/v1/rps/"+p.Name, func(w http.ResponseWriter, r *http.Request) {
+		var q types.Request
+		var res types.Response
 		var config = make(map[string][]string)
 		var environment map[string]string
 		var whitelisted bool

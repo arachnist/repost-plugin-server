@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/arachnist/repost-plugin-server"
+	"github.com/arachnist/repost-plugin-server/types"
 	"github.com/arachnist/repost-plugin-server/util"
 )
 
@@ -54,7 +54,7 @@ func (tips *tips) popTip(url string) (string, error) {
 
 var t tips
 
-func frog(ctx context.Context, config map[string][]string, request rps.Request) (response rps.Response) {
+func frog(ctx context.Context, config map[string][]string, request types.Request) (response types.Response) {
 	tip, err := t.popTip(config["URL"][0])
 	if err != nil {
 		response.Ok = false
@@ -66,8 +66,8 @@ func frog(ctx context.Context, config map[string][]string, request rps.Request) 
 	return
 }
 
-func List() []rps.Plugin {
-	return []rps.Plugin{
+func List() []types.Plugin {
+	return []types.Plugin{
 		{"frog", frog, []string{"URL"}},
 	}
 }

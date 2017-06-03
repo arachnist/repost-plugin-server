@@ -6,11 +6,11 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/arachnist/repost-plugin-server"
+	"github.com/arachnist/repost-plugin-server/types"
 	"github.com/arachnist/repost-plugin-server/util"
 )
 
-func bonjour(ctx context.Context, config map[string][]string, request rps.Request) (response rps.Response) {
+func bonjour(ctx context.Context, config map[string][]string, request types.Request) (response types.Response) {
 	t, _ := time.Parse("2006-01-02", config["startDate"][0])
 	max := int(time.Now().Sub(t).Hours())/24 + 1
 
@@ -26,8 +26,8 @@ func bonjour(ctx context.Context, config map[string][]string, request rps.Reques
 	return
 }
 
-func List() []rps.Plugin {
-	return []rps.Plugin{
+func List() []types.Plugin {
+	return []types.Plugin{
 		{"bonjour", bonjour, []string{"URL", "empty"}},
 	}
 }
