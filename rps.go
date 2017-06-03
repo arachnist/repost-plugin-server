@@ -15,13 +15,15 @@ type server struct {
 	plugins map[string]types.Plugin
 	Mux     *ServeMux
 	lock    sync.RWMutex
+	apikey  string
 }
 
-func New(basedir string) *server {
+func New(basedir, apikey string) *server {
 	return &server{
 		Config:  NewConfig(basedir),
 		plugins: make(map[string]types.Plugin),
 		Mux:     NewServeMux(),
+		apikey:  apikey,
 	}
 }
 

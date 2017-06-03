@@ -17,10 +17,11 @@ var (
 	bindAddress string
 	baseConfig  string
 	plugins     string
+	apikey      string
 )
 
 func main() {
-	RPS := rps.New(baseConfig)
+	RPS := rps.New(baseConfig, apikey)
 	tr := trace.New("rps.init", "")
 	ctx := trace.NewContext(context.Background(), tr)
 
@@ -43,5 +44,6 @@ func init() {
 	flag.StringVar(&bindAddress, "bind_address", ":8081", "Address to bind the web api")
 	flag.StringVar(&baseConfig, "base_config", path.Join(os.Getenv("HOME"), ".repost", "config"), "Base configuration directory")
 	flag.StringVar(&plugins, "plugins", path.Join(os.Getenv("HOME"), ".repost", "plugins"), "Base plugin directory")
+	flag.StringVar(&apikey, "api_key", "f33dc0d3", "API key")
 	flag.Parse()
 }

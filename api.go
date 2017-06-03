@@ -34,6 +34,16 @@ func (srv *server) wrapAPI(p types.Plugin) {
 			tr.Finish()
 		}()
 
+		val, ok := r.Header["X-Api-Key"]
+		if !ok || (ok && val[0] != srv.apikey) {
+			tr.LazyPrintf("Invalid API key")
+			tr.SetError()
+			w.WriteHeader(403)
+			res.Ok = false
+			res.Err = "Invalid API key"
+			return
+		}
+
 		err := json.NewDecoder(r.Body).Decode(&q)
 		if err != nil {
 			tr.LazyPrintf("Error decoding request body: %+v", err)
