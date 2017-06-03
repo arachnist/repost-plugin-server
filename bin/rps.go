@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/net/trace"
 
 	"github.com/arachnist/repost-plugin-server"
@@ -26,6 +27,7 @@ func main() {
 	ctx := trace.NewContext(context.Background(), tr)
 
 	RPS.Mux.Handle("/", http.DefaultServeMux)
+	RPS.Mux.Handle("/metrics", promhttp.Handler())
 
 	for _, name := range RPS.Config.Lookup(ctx, nil, "plugins") {
 		tr.LazyPrintf("Loading plugin %s", name)
