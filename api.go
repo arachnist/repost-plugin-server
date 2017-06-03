@@ -13,7 +13,7 @@ import (
 	"github.com/arachnist/repost-plugin-server/types"
 )
 
-func (srv *server) WrapAPI(p types.Plugin) {
+func (srv *server) wrapAPI(p types.Plugin) {
 	srv.Mux.HandleFunc("/api/v1/rps/"+p.Name, func(w http.ResponseWriter, r *http.Request) {
 		var q types.Request
 		var res types.Response

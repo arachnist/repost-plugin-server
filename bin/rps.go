@@ -43,7 +43,7 @@ func main() {
 			continue
 		}
 		for _, plug := range listSym.(func() []types.Plugin)() {
-			RPS.WrapAPI(plug)
+			RPS.Register(plug)
 		}
 	}
 

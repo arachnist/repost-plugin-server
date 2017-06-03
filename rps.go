@@ -21,7 +21,7 @@ func New(basedir string) *server {
 	}
 }
 
-func (r *server) register(p types.Plugin) {
+func (r *server) Register(p types.Plugin) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
@@ -29,10 +29,11 @@ func (r *server) register(p types.Plugin) {
 		r.plugins = make(map[string]types.Plugin)
 	}
 
+	r.wrapAPI(p)
 	r.plugins[p.Name] = p
 }
 
-func (r *server) deregister(name string) {
+func (r *server) Deregister(name string) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
