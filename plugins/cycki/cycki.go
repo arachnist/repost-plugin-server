@@ -29,6 +29,6 @@ func init() {
 
 func List() []types.Plugin {
 	return []types.Plugin{
-		{"cycki", cycki, []string{"URL", "xpath"}},
+		{"cycki", cycki, []string{"URL", "xpath"}, "cycki"},
 	}
 }

@@ -28,6 +28,6 @@ func bonjour(ctx context.Context, config map[string][]string, request types.Requ
 
 func List() []types.Plugin {
 	return []types.Plugin{
-		{"bonjour", bonjour, []string{"URL", "empty"}},
+		{"bonjour", bonjour, []string{"URL", "empty"}, "bonjour"},
 	}
 }

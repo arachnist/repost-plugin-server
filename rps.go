@@ -2,7 +2,11 @@ package rps
 
 import (
 	"context"
+	"errors"
+	"path"
+	"path/filepath"
 	"plugin"
+	"strings"
 	"sync"
 
 	"golang.org/x/net/trace"
@@ -11,24 +15,40 @@ import (
 )
 
 type server struct {
-	Config  *Config
-	plugins map[string]types.Plugin
-	Mux     *ServeMux
-	lock    sync.RWMutex
-	apikey  string
+	Config    *Config
+	plugins   map[string]types.Plugin
+	Mux       *ServeMux
+	lock      sync.RWMutex
+	apikey    string
+	pluginDir string
 }
 
-func New(basedir, apikey string) *server {
-	return &server{
-		Config:  NewConfig(basedir),
-		plugins: make(map[string]types.Plugin),
-		Mux:     NewServeMux(),
-		apikey:  apikey,
+func New(basedir, plugins, apikey string) (s *server) {
+	s = &server{
+		Config:    NewConfig(basedir),
+		plugins:   make(map[string]types.Plugin),
+		Mux:       NewServeMux(),
+		apikey:    apikey,
+		pluginDir: plugins,
 	}
+	for _, plug := range []types.Plugin{
+		{"mgmt/list", s.list, []string{}, "list"},
+		{"mgmt/load", s.load, []string{}, "load"},
+		{"mgmt/unload", s.unload, []string{}, "unload"},
+	} {
+		s.Register(plug)
+	}
+	return s
 }
 
 func (r *server) Load(ctx context.Context, pl string) error {
 	tr, _ := trace.FromContext(ctx)
+	pl = filepath.Clean(path.Join(r.pluginDir, pl+".so"))
+	if !strings.HasPrefix(pl, r.pluginDir) {
+		tr.SetError()
+		tr.LazyPrintf("invalid plugin name")
+		return errors.New("Invalid plugin name")
+	}
 	p, err := plugin.Open(pl)
 	if err != nil {
 		tr.SetError()
@@ -65,8 +85,4 @@ func (r *server) Deregister(name string) {
 
 	delete(r.plugins, name)
 	r.Mux.Deregister("/api/v1/rps/" + name)
-}
-
-func (r *server) list() map[string]types.Plugin {
-	return r.plugins
 }

@@ -68,6 +68,6 @@ func frog(ctx context.Context, config map[string][]string, request types.Request
 
 func List() []types.Plugin {
 	return []types.Plugin{
-		{"frog", frog, []string{"URL"}},
+		{"frog", frog, []string{"URL"}, "frog"},
 	}
 }

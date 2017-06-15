@@ -56,25 +56,25 @@ func at(ctx context.Context, config map[string][]string, request types.Request) 
 	}
 
 	if len(now) > 0 {
-		response.Message = append(append(response.Message, "now:"), now...)
+		response.Message = append(append(response.Message.([]string), "now:"), now...)
 	}
 	if len(recently) > 0 {
-		response.Message = append(append(response.Message, "recently:"), recently...)
+		response.Message = append(append(response.Message.([]string), "recently:"), recently...)
 	}
 	if len(now) == 0 && len(recently) == 0 {
-		response.Message = append(response.Message, config["empty"]...)
+		response.Message = append(response.Message.([]string), config["empty"]...)
 	}
 
 	if values.Kektops > 0 {
-		response.Message = append(response.Message, []string{"kektops:", strconv.Itoa(values.Kektops)}...)
+		response.Message = append(response.Message.([]string), []string{"kektops:", strconv.Itoa(values.Kektops)}...)
 	}
 
 	if values.Esps > 0 {
-		response.Message = append(response.Message, []string{"esps:", strconv.Itoa(values.Esps)}...)
+		response.Message = append(response.Message.([]string), []string{"esps:", strconv.Itoa(values.Esps)}...)
 	}
 
 	if values.Unknown > 0 {
-		response.Message = append(response.Message, []string{"unknown:", strconv.Itoa(values.Unknown)}...)
+		response.Message = append(response.Message.([]string), []string{"unknown:", strconv.Itoa(values.Unknown)}...)
 	}
 
 	return response
@@ -82,6 +82,6 @@ func at(ctx context.Context, config map[string][]string, request types.Request) 
 
 func List() []types.Plugin {
 	return []types.Plugin{
-		{"at", at, []string{"URL", "empty"}},
+		{"at", at, []string{"URL", "empty"}, "at"},
 	}
 }
